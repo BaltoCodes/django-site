@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import index, accueil, graph_view, calculator_view, get_message, world_is_yours, new_world, human
+from .views import index, accueil, graph_view, calculator_view, get_message, world_is_yours, new_world, human, interactive_graph
 
 urlpatterns = [
     path('', index, name="index"),
@@ -29,4 +29,5 @@ urlpatterns = [
     path('accueil/', world_is_yours, name="world"),
     path('new_accueil/', new_world, name="new_earth" ),
     path('human/', human, name="human" ),
+    path('interactive_graph/', interactive_graph, name="Graphique dz" ),
 ]

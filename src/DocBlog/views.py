@@ -16,8 +16,14 @@ def index(request):
     
     return render(request, "DocBlog/index.html", context={"date": datetime.today()})
 
+def interactive_graph(request):
+   data=generation_data('BTCUSDT', '1h')
+  
+   return render(request, "DocBlog/interactive_graph.html", context={"data": data})
 
 def world_is_yours(request):
+    
+
     return render(request, 'DocBlog/world.html')
 
 
@@ -99,6 +105,7 @@ def generation_data(coin,interval):
 def graph_view(request):
     # Votre code de génération du graphique avec Matplotlib
     
+
     data=generation_data('BTCUSDT', '1h')
     ax = plt.axes()
     axis=plt.axis()
@@ -109,7 +116,6 @@ def graph_view(request):
     plt.ylabel("Prix")
     plt.plot(data['Open time international'], data['Open'], color='red', linewidth=2, mouseover=True, fillstyle='full')
     
-
     #liste = get_tri_par( 'market_cap', 'asc')
 
     #dataframe = pd.DataFrame(liste)
@@ -259,7 +265,7 @@ def create_model(ourClasses, documentX,documentY, newWords):
     ourNewModel.add(Dropout(0.3))
     ourNewModel.add(Dense(oShape, activation = "softmax"))
     # below is a callable that returns the value to be used with no arguments
-    md = optimizers.legacy.Adam(learning_rate=0.01, decay=1e-6)
+    md = optimizers.Adam(learning_rate=0.01, decay=1e-6)
     # Below line improves the numerical stability and pushes the computation of the probability distribution into the categorical crossentropy loss function.
     ourNewModel.compile(loss='categorical_crossentropy',
                 optimizer=md,
