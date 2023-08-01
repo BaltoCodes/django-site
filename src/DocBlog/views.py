@@ -106,15 +106,14 @@ def graph_view(request):
     # Votre code de génération du graphique avec Matplotlib
     
 
-    data=generation_data('BTCUSDT', '1h')
-    ax = plt.axes()
-    axis=plt.axis()
-    ax.set_facecolor((0.161, 0.152, 0.157))
+    btc=generation_data('BTCUSDT', '1h')
+    plt.figure(figsize=(10, 4))
 
     #axis.set_facecolor((0.100, 0.93, 0.96))
+    plt.plot(btc['Open time international'], btc['Open'], color='red', linewidth=2, mouseover=True, fillstyle='full')
+
     plt.xlabel("Date")
     plt.ylabel("Prix")
-    plt.plot(data['Open time international'], data['Open'], color='red', linewidth=2, mouseover=True, fillstyle='full')
     
     #liste = get_tri_par( 'market_cap', 'asc')
 
@@ -132,7 +131,64 @@ def graph_view(request):
 
     # Encodage de l'image en base64
     graphic = urllib.parse.quote(base64.b64encode(image_png))
-    return render(request, 'DocBlog/graph.html', {'graphic': graphic})
+
+
+
+    btc['rsi']=ta.momentum.rsi(btc['Close'])
+    #rsi=[i for i in rsi]
+    liste=ta.trend.MACD(btc['Close'])
+    btc['MACD']=liste.macd()
+    btc['MACD_SIGNAL']=liste.macd_signal()
+    btc['area'] = btc['MACD'] - btc['MACD_SIGNAL']
+
+    btc['crossover'] = ((btc['MACD'] > btc['MACD_SIGNAL']) & (btc['MACD'].shift(1) <= btc['MACD_SIGNAL'].shift(1))) | \
+                    ((btc['MACD'] < btc['MACD_SIGNAL']) & (btc['MACD'].shift(1) >= btc['MACD_SIGNAL'].shift(1)))
+
+    # Tracer le graphique
+    plt.figure(figsize=(12, 6))
+    plt.plot(btc['Close time international'][500-len(btc['MACD']):], btc['MACD'], label='MACD', color='blue')
+    plt.plot(btc['Close time international'][500-len(btc['MACD']):], btc['MACD_SIGNAL'], label='MACD_SIGNAL', color='orange')
+    plt.fill_between(btc['Close time international'][500-len(btc['MACD']):], btc['MACD'], btc['MACD_SIGNAL'], where=(btc['MACD'] >= btc['MACD_SIGNAL']), facecolor='green', alpha=0.3)
+    plt.fill_between(btc['Close time international'][500-len(btc['MACD']):], btc['MACD'], btc['MACD_SIGNAL'], where=(btc['MACD'] < btc['MACD_SIGNAL']), facecolor='red', alpha=0.3)
+    plt.scatter(btc['Open time international'][btc['crossover']], btc.loc[btc['crossover'], 'MACD'], color='black', marker='o', label='Crossover')
+    plt.legend()
+    plt.xlabel('Date')
+    plt.ylabel('MACD and MACD_SIGNAL')
+    plt.title('MACD and MACD_SIGNAL with Crossovers')
+    plt.grid(True)
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png_second = buffer.getvalue()
+    buffer.close()
+    macd = urllib.parse.quote(base64.b64encode(image_png_second))
+
+    
+    plt.figure(figsize=(12, 6))
+    plt.plot(btc['Open time international'], btc['rsi'])
+    plt.xlabel('Date')
+    plt.ylabel('RSI')
+    plt.title('Signal RSI')
+    plt.fill_between(btc['Open time international'], btc['rsi'], 70, where=(btc['rsi'] >= 70), facecolor='red', alpha=0.3)
+    plt.fill_between(btc['Open time international'], btc['rsi'], 30, where=(btc['rsi'] <= 30), facecolor='green', alpha=0.3)
+    plt.fill_between(btc['Open time international'], 30, 70, where=((btc['rsi'] > 30) & (btc['rsi'] < 70)), facecolor='yellow', alpha=0.3)
+
+    plt.grid(True)
+
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png_third = buffer.getvalue()
+    buffer.close()
+    rsi = urllib.parse.quote(base64.b64encode(image_png_third))
+
+    if request.method == 'POST':
+        # Code de la fonction Python à exécuter lorsque le bouton est cliqué
+        resultat = "Fonction Python exécutée avec succès !"
+        return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi , 'resultat': resultat})
+
+    # Encodage de l'image en base64
+    return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi })
 
 
 
@@ -265,7 +321,7 @@ def create_model(ourClasses, documentX,documentY, newWords):
     ourNewModel.add(Dropout(0.3))
     ourNewModel.add(Dense(oShape, activation = "softmax"))
     # below is a callable that returns the value to be used with no arguments
-    md = optimizers.Adam(learning_rate=0.01, decay=1e-6)
+    md = optimizers.legacy.Adam(learning_rate=0.01, decay=1e-6)
     # Below line improves the numerical stability and pushes the computation of the probability distribution into the categorical crossentropy loss function.
     ourNewModel.compile(loss='categorical_crossentropy',
                 optimizer=md,
@@ -316,9 +372,6 @@ def getRes(firstlist, fJson):
       break
   return ourResult
 
-
-
-
 ourClasses, newWords, X, Y = create_word(data)
 ourNewModel = create_model(ourClasses, X,Y, newWords)
 
@@ -351,3 +404,14 @@ def get_message(request) :
     else:
         result = ''
     return render(request, 'DocBlog/calculator.html', {'result': result, 'messages': messages})
+
+
+
+
+
+
+import ta
+import matplotlib.pyplot as plt
+
+#######Pour récupérer le signal MACD
+

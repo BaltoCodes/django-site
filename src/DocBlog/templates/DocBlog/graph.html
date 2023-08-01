@@ -10,6 +10,7 @@
         body {
             margin: 0;
             padding: 0;
+            background-color: #ffffff;
         }
 
         nav {
@@ -39,6 +40,91 @@
             background-color: #111;
         }
 
+        .wtf-boy {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .image-wrapper {
+            width: 50%;
+            height: 100vh;
+            max-height: 50vh; /* Redimensionner la hauteur de l'image */
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: auto; /* Réduire proportionnellement la hauteur de l'image */
+            object-fit: cover;
+        }
+        .message {
+            background-color: #e8939a;
+            color: #fff;
+            text-size-adjust: 12px;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-weight: bold; /* Mettre le texte en gras */
+            text-align: center;
+       
+        }
+
+        /* Nouveau style pour .message-container */
+        .message-container {
+            margin: 10px 0;
+            padding: 2px;
+            text-align: center;
+
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            position: center;
+            text-decoration: none;
+            color: #fff;
+            background-color: #4CAF50;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            }
+
+            /* Effet au survol */
+            .button:hover {
+            background-color: #45a049;
+            }
+
+            /* Effet au clic */
+            .button:active {
+            background-color: #3e8e41;
+            }
+
+            /* Effet de transition en cas de changement */
+            .button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px #f2f2f2, 0 0 0 6px #4CAF50;
+            }
+
+            /* Style pour un bouton désactivé */
+            .button.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            }
+
+
+            .result{
+                background-color: #8dc792;
+                color: #241b1b;
+                text-size-adjust: 12px;
+                border-radius: 20px;
+                padding: 10px 20px;
+                font-weight: bold; /* Mettre le texte en gras */
+                text-align: center;
+
+            }
+
 
     </style>
 
@@ -62,10 +148,36 @@
 
     
     <div class="container">
-        <h1>Graphique avec Matplotlib</h1>
+        <h1>Analyse technique</h1>
         <img src="data:image/png;base64,{{ graphic }}" alt="Graphique">
     </div>
-
+    <div class="message-container message">
+        <p>Les principaux signaux utilisés dans le Big Balto Code</p>
+    </div>
+    <div class="wtf-boy">
+        <div class="image-wrapper">
+            <img src="data:image/png;base64,{{ macd }}" alt="Image MACD">
+        </div>
+        <div class="image-wrapper">
+            <img src="data:image/png;base64,{{ rsi }}" alt="Image RSI">
+        </div>
+    </div>
+    <div class="message-container message">
+        <p>Conclusion de l'analyse de Big Balto Cash</p>
+    </div>
+    <div class="button">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Cliquer pour calculer l'analyse</button>
+        </form>
+    </div>
+    <div class="result">
+        {% if resultat %}
+            <p>Résultat de la fonction : {{ resultat }}</p>
+        {% endif %}
+    </div>
+    
+   
    
 
 </body>
