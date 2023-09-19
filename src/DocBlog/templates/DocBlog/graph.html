@@ -81,6 +81,8 @@
             border: none;
             border-radius: 50px;
             font-size: 16px;
+            align-items: center;
+            display:flex;
             font-weight: bold;
             text-align: center;
             position: center;
@@ -168,7 +170,7 @@
     <div class="button">
         <form method="post">
             {% csrf_token %}
-            <button type="submit">Cliquer pour calculer l'analyse</button>
+            <button class="button" type="submit">Cliquer pour calculer l'analyse</button>
         </form>
     </div>
     <div class="result">

@@ -262,8 +262,12 @@ def graph_view(request):
 
     if request.method == 'POST':
         # Code de la fonction Python à exécuter lorsque le bouton est cliqué
-        resultat = "Fonction Python exécutée avec succès !"
-        return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi , 'resultat': resultat})
+        if btc['rsi'][499] < 40 and btc['MACD'][499]-btc['MACD_SIGNAL'][499] < 10 :
+           resutat=f"Bonne opporunité d'achat avec RSI : {btc['rsi'][499]} et MACD-SIGNAL: {btc['MACD'][499]-btc['MACD_SIGNAL'][499]}"
+        else : 
+           resultat=f"Voici les chiffres : RSI : {round(btc['rsi'][499], 2) } et MACD : {round(btc['MACD'][499]-btc['MACD_SIGNAL'][499], 1)} Pas d'opportunités d'achat pour l'instant "
+        
+        return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'MACD': macd, 'rsi': rsi , 'resultat': resultat})
 
     # Encodage de l'image en base64
     return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi })
@@ -297,7 +301,7 @@ import random
 import nltk
 import numpy as num
 from nltk.stem import WordNetLemmatizer # It has the ability to lemmatize.
-import tensorflow as tensorF
+import tensorflow as tf
 from tensorflow import keras # A multidimensional array of elements is represented by this symbol.
 from keras import Sequential, optimizers # Sequential groups a linear stack of layers into a tf.keras.Model
 from keras.layers import Dense, Dropout
@@ -399,7 +403,7 @@ def create_model(ourClasses, documentX,documentY, newWords):
     ourNewModel.add(Dropout(0.3))
     ourNewModel.add(Dense(oShape, activation = "softmax"))
     # below is a callable that returns the value to be used with no arguments
-    md = optimizers.legacy.Adam(learning_rate=0.01, decay=1e-6)
+    md = tf.keras.optimizers.legacy.Adam(learning_rate=0.01, decay=1e-6)
     # Below line improves the numerical stability and pushes the computation of the probability distribution into the categorical crossentropy loss function.
     ourNewModel.compile(loss='categorical_crossentropy',
                 optimizer=md,
