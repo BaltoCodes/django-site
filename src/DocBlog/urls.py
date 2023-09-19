@@ -16,7 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import index, accueil, graph_view, calculator_view, get_message, world_is_yours, new_world, human, interactive_graph
+from .views import index, accueil, graph_view, calculator_view, get_message, world_is_yours, new_world, human, interactive_graph,spotify,  spotify_callback, spotify_login, obtenir_login
+from . import views
+
 
 urlpatterns = [
     path('', index, name="index"),
@@ -30,4 +32,7 @@ urlpatterns = [
     path('new_accueil/', new_world, name="new_earth" ),
     path('human/', human, name="human" ),
     path('interactive_graph/', interactive_graph, name="Graphique dz" ),
+    path('spotify/', spotify, name="Get my spoti"),
+    path('spotify_login/', spotify_login, name="spotify login"),
+    path('obtenir_login/', obtenir_login, name="Les chiffres les vrais")
 ]

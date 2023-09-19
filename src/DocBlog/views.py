@@ -1,34 +1,112 @@
 from datetime import datetime
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from binance import Client
-
 import requests
 import pandas as pd
 import numpy as np
+from django.shortcuts import render, redirect
+from spotipy import Spotify
+from django.http import JsonResponse
 
+from spotipy.oauth2 import SpotifyOAuth
 
 import matplotlib.pyplot as plt
 
-
+client_id = '7cb7124d4b2c48ec8dc755744a6451ce'
+client_secret = 'b1508082388f4e71bc8ed94bada90280'
+url_redirect = 'http://127.0.0.1:8000/spotify/'
 
 def index(request):
-    
     return render(request, "DocBlog/index.html", context={"date": datetime.today()})
+
+
+
+
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
+
+def spotify_login(request):
+    # Redirige vers l'authentification Spotify
+    sp_oauth = SpotifyOAuth()
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+def spotify_callback(request):
+    # Gère la réponse de l'authentification Spotify
+    sp_oauth = SpotifyOAuth(client_id, client_secret, url_redirect)
+    
+    # Vérifiez si l'utilisateur est déjà authentifié, s'il ne l'est pas, redirigez-le vers la page d'authentification Spotify
+    if not sp_oauth.get_cached_token():
+        auth_url = sp_oauth.get_authorize_url()
+        return redirect(auth_url)
+    
+    # Si l'utilisateur est authentifié, obtenez les meilleurs artistes
+    token_info = sp_oauth.get_access_token()
+    if token_info:
+        sp = Spotify(auth=token_info['access_token'])
+        # Obtenez les meilleurs artistes de l'utilisateur
+        top_artists = sp.current_user_top_artists(limit=10)
+        # Renvoie le modèle spotify.html avec les données
+        return  {'top_artists': top_artists['items']}
+    else:
+        return HttpResponse("L'authentification Spotify a échoué.")
+
+
+
+def spotify(request):
+   return render(request, "DocBlog/spotify.html")
+
+
+
+
+def obtenir_login(request):
+    from django.http import JsonResponse
+    sp_oauth = SpotifyOAuth(client_id, client_secret, url_redirect)
+    
+    # Vérifiez si l'utilisateur est déjà authentifié, s'il ne l'est pas, redirigez-le vers la page d'authentification Spotify
+    if not sp_oauth.get_cached_token():
+        auth_url = sp_oauth.get_authorize_url()
+        return redirect(auth_url)
+    
+    # Si l'utilisateur est authentifié, obtenez les meilleurs artistes
+    token_info = sp_oauth.get_access_token()
+    if token_info:
+        sp = Spotify(auth=token_info['access_token'])
+        # Obtenez les meilleurs artistes de l'utilisateur
+        top_artists = sp.current_user_top_artists(limit=10)
+        # Renvoie le modèle spotify.html avec les données
+        print({'top_artists': top_artists['items']})
+        return JsonResponse({'top_artists': top_artists['items']})
+    ##else:
+       # return HttpResponse("L'authentification Spotify a échoué.")
+
+
+
+
+
+
+
+
+
+
 
 def interactive_graph(request):
    data=generation_data('BTCUSDT', '1h')
-  
    return render(request, "DocBlog/interactive_graph.html", context={"data": data})
 
-def world_is_yours(request):
-    
 
+
+def world_is_yours(request): 
     return render(request, 'DocBlog/world.html')
 
 
 def new_world(request):
    return render(request, "DocBlog/new_earth.html")
+
+
 
 def human(request):
    return render(request,"DocBlog/human.html" )
