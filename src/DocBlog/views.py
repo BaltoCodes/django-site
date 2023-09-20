@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 client_id = '7cb7124d4b2c48ec8dc755744a6451ce'
 client_secret = 'b1508082388f4e71bc8ed94bada90280'
-url_redirect = 'http://127.0.0.1:8000/spotify/'
+url_redirect = 'http://127.0.0.1:8000/callback/'
 
 def index(request):
     return render(request, "DocBlog/index.html", context={"date": datetime.today()})
@@ -50,10 +50,27 @@ def spotify_callback(request):
         # Obtenez les meilleurs artistes de l'utilisateur
         top_artists = sp.current_user_top_artists(limit=10)
         # Renvoie le modèle spotify.html avec les données
-        return  {'top_artists': top_artists['items']}
+        return   render(request, "DocBlog/callback.html", context={'top_artists': top_artists['items']})
     else:
         return HttpResponse("L'authentification Spotify a échoué.")
 
+
+
+
+
+
+def spotify_callback_two(request):
+
+    token_info = sp_oauth.get_access_token()
+    if token_info:
+        sp = Spotify(auth=token_info['access_token'])
+        # Obtenez les meilleurs artistes de l'utilisateur
+        top_artists = sp.current_user_top_artists(limit=10)
+        # Renvoie le modèle spotify.html avec les données
+        return   render(request, "DocBlog/callback.html", context={'top_artists': top_artists['items']})
+    else:
+        return render(request, "DocBlog/callback.html")
+    
 
 
 def spotify(request):

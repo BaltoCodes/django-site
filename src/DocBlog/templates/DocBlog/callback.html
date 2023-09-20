@@ -1,0 +1,16 @@
+<!-- music_player/templates/music_player/library.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Spotify Library</title>
+</head>
+<body>
+    <h1>My Spotify Library</h1>
+    <ul>
+        {% for track in tracks['items'] %}
+            <li>{{ track['track']['name'] }} - {{ track['track']['artists'][0]['name'] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
