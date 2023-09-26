@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import index, accueil, graph_view, calculator_view, get_message, world_is_yours, new_world, human, interactive_graph,spotify,  spotify_callback_two, spotify_login, obtenir_login
+from .views import index, graph_view, calculator_view, get_message, world_is_yours, interactive_graph,spotify,  spotify_callback, obtenir_login
 from . import views
 
 
@@ -24,17 +24,13 @@ urlpatterns = [
     path('', index, name="index"),
     path('blog/', include("blog.urls")),
     path('admin/', admin.site.urls),
-    path('prix/', accueil, name="accueil"),
-    path('graph/', graph_view, name="graph"),
-    path('calculator/', calculator_view, name="calculator_view"),
-    path('get-message/', get_message, name="get_message"),
-    path('accueil/', world_is_yours, name="world"),
-    path('new_accueil/', new_world, name="new_earth" ),
-    path('human/', human, name="human" ),
-    path('interactive_graph/', interactive_graph, name="Graphique dz" ),
-    path('spotify/', spotify, name="Get my spoti"),
-    path('callback/', spotify_callback_two, name="callback"),
 
-    path('spotify_login/', spotify_login, name="spotify login"),
-    path('obtenir_login/', obtenir_login, name="Les chiffres les vrais")
+
+    path('graph/', graph_view, name="graph"), #Utilisé, fonctionnel
+    path('get-message/', get_message, name="get_message"), #Utilisé
+    path('accueil/', world_is_yours, name="world"), #Utilisé fonctionnel mais version mieux existe
+    path('interactive_graph/', interactive_graph, name="Graphique dz" ), #Utilisé mais pas fini 
+    path('spotify/', spotify, name="Get my spoti"), #Utilisé fonctionnel 
+    path('callback/', spotify_callback, name="callback"), #Utilisé fonctionnel
+    path('obtenir_login/', obtenir_login, name="Les chiffres les vrais")#Utilisé fonctionnel
 ]

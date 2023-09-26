@@ -1,156 +1,135 @@
 from datetime import datetime
-
 from django.shortcuts import render, redirect
 from binance import Client
 import requests
 import pandas as pd
 import numpy as np
-from django.shortcuts import render, redirect
-from spotipy import Spotify
 from django.http import JsonResponse
-
-from spotipy.oauth2 import SpotifyOAuth
-
-import matplotlib.pyplot as plt
-
-client_id = '7cb7124d4b2c48ec8dc755744a6451ce'
-client_secret = 'b1508082388f4e71bc8ed94bada90280'
-url_redirect = 'http://127.0.0.1:8000/callback/'
-
-def index(request):
-    return render(request, "DocBlog/index.html", context={"date": datetime.today()})
-
-
-
-
-from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth
-
-def spotify_login(request):
-    # Redirige vers l'authentification Spotify
-    sp_oauth = SpotifyOAuth()
-    auth_url = sp_oauth.get_authorize_url()
-    return redirect(auth_url)
-
-def spotify_callback(request):
-    # Gère la réponse de l'authentification Spotify
-    sp_oauth = SpotifyOAuth(client_id, client_secret, url_redirect)
-    
-    # Vérifiez si l'utilisateur est déjà authentifié, s'il ne l'est pas, redirigez-le vers la page d'authentification Spotify
-    if not sp_oauth.get_cached_token():
-        auth_url = sp_oauth.get_authorize_url()
-        return redirect(auth_url)
-    
-    # Si l'utilisateur est authentifié, obtenez les meilleurs artistes
-    token_info = sp_oauth.get_access_token()
-    if token_info:
-        sp = Spotify(auth=token_info['access_token'])
-        # Obtenez les meilleurs artistes de l'utilisateur
-        top_artists = sp.current_user_top_artists(limit=10)
-        # Renvoie le modèle spotify.html avec les données
-        return   render(request, "DocBlog/callback.html", context={'top_artists': top_artists['items']})
-    else:
-        return HttpResponse("L'authentification Spotify a échoué.")
-
-
-
-
-
-
-def spotify_callback_two(request):
-
-    token_info = sp_oauth.get_access_token()
-    if token_info:
-        sp = Spotify(auth=token_info['access_token'])
-        # Obtenez les meilleurs artistes de l'utilisateur
-        top_artists = sp.current_user_top_artists(limit=10)
-        # Renvoie le modèle spotify.html avec les données
-        return   render(request, "DocBlog/callback.html", context={'top_artists': top_artists['items']})
-    else:
-        return render(request, "DocBlog/callback.html")
-    
-
-
-def spotify(request):
-   return render(request, "DocBlog/spotify.html")
-
-
-
-
-def obtenir_login(request):
-    from django.http import JsonResponse
-    sp_oauth = SpotifyOAuth(client_id, client_secret, url_redirect)
-    
-    # Vérifiez si l'utilisateur est déjà authentifié, s'il ne l'est pas, redirigez-le vers la page d'authentification Spotify
-    if not sp_oauth.get_cached_token():
-        auth_url = sp_oauth.get_authorize_url()
-        return redirect(auth_url)
-    
-    # Si l'utilisateur est authentifié, obtenez les meilleurs artistes
-    token_info = sp_oauth.get_access_token()
-    if token_info:
-        sp = Spotify(auth=token_info['access_token'])
-        # Obtenez les meilleurs artistes de l'utilisateur
-        top_artists = sp.current_user_top_artists(limit=10)
-        # Renvoie le modèle spotify.html avec les données
-        print({'top_artists': top_artists['items']})
-        return JsonResponse({'top_artists': top_artists['items']})
-    ##else:
-       # return HttpResponse("L'authentification Spotify a échoué.")
-
-
-
-
-
-
-
-
-
-
-
-def interactive_graph(request):
-   data=generation_data('BTCUSDT', '1h')
-   return render(request, "DocBlog/interactive_graph.html", context={"data": data})
-
-
-
-def world_is_yours(request): 
-    return render(request, 'DocBlog/world.html')
-
-
-def new_world(request):
-   return render(request, "DocBlog/new_earth.html")
-
-
-
-def human(request):
-   return render(request,"DocBlog/human.html" )
-
-def accueil(request):
-
-    import requests
-    # Récupérer les données du prix du Bitcoin (utilisation d'une API publique)
-    response = requests.get('https://api.coindesk.com/v1/bpi/currentprice/BTC.json')
-    data = response.json()
-    bitcoin_price = data['bpi']['USD']['rate']
-
-    # Passer les données au template pour l'affichage
-    context = {
-        'title': 'My titre',
-        'bitcoin_price': bitcoin_price,
-    }
-    
-    return render(request, "DocBlog/accueil.html", context=context)
-
-
+import ta
 import matplotlib.pyplot as plt
 import io
 import urllib, base64
 
 
 
+
+##########  Variables   ##########
+client_id = '7cb7124d4b2c48ec8dc755744a6451ce'
+client_secret = 'b1508082388f4e71bc8ed94bada90280'
+url_redirect = 'http://127.0.0.1:8000/callback/'
+spotify_token_uri='https://accounts.spotify.com/api/token'
+spotify_auth_uri='https://accounts.spotify.com/authorize'
+
+
+#######################
+
+
+
+
+
+#Cette page est la page d'accueil sous sa dernière version
+def index(request):
+    return render(request, "BBS/index.html", context={"date": datetime.today()})
+
+
+
+
+
+
+
+
+
+
+##################    Spotify   ##################
+def spotify_callback(request):
+        code = request.GET.get('code')
+
+        token_data = {
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': url_redirect,
+            'client_id': client_id,
+            'client_secret': client_secret
+        }
+
+        token_response = requests.post(spotify_token_uri, data=token_data)
+        token_json = token_response.json()
+
+        access_token = token_json['access_token']
+
+        user_data_response = requests.get('https://api.spotify.com/v1/me', headers={'Authorization': f'Bearer {access_token}'})
+        user_data = user_data_response.json()
+
+        api_url = 'https://api.spotify.com/v1/me/top/artists'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response_artist = requests.get(api_url, headers=headers)
+            #artist_data = response_artist.json()
+        print(response_artist)
+
+
+        api_url_artist='https://api.spotify.com/v1/me/top/tracks'
+
+        response_song = requests.get(api_url_artist, headers=headers)
+        #song_data = response_song.json()
+        #print(artist_data)
+        print(response_song)
+
+
+        name=user_data['display_name']
+        followers=user_data['followers']['total']
+        image=user_data['images'][0]['url']
+       
+        return render(request, "BBS/callback.html", context={"name": name, "followers":followers, "image":image})
+
+
+#Le code qui permet de render la page d'accueil de Spotify 
+def spotify(request):
+    return render(request, "BBS/spotify.html")
+
+
+#Le code qui permet de rediriger vers la page de login de Spotify
+def obtenir_login(request):
+    sp_oauth = SpotifyOAuth(client_id, client_secret, url_redirect)
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+
+    ###########################################################
+
+
+
+
+
+
+
+
+
+############   Le code qui permet de générer le graphique interactif 
+def interactive_graph(request):
+   data=generation_data('BTCUSDT', '1h')
+   return render(request, "BBS/interactive_graph.html", context={"data": data})
+
+
+
+
+
+
+############   Le code qui permet de générer la version première du monde
+def world_is_yours(request): 
+    return render(request, 'BBS/world-V1.html')
+
+
+
+
+
+
+
+
+
+####### Le code qui permet de générer la data financière associée à n'importe quel actif cryptomonnaie
 def generation_data(coin,interval):
     from datetime import timezone
     df={}
@@ -197,10 +176,12 @@ def generation_data(coin,interval):
 
 
 
-def graph_view(request):
-    # Votre code de génération du graphique avec Matplotlib
-    
 
+
+
+
+
+def graph_view(request):
     btc=generation_data('BTCUSDT', '1h')
     plt.figure(figsize=(10, 4))
 
@@ -209,15 +190,7 @@ def graph_view(request):
 
     plt.xlabel("Date")
     plt.ylabel("Prix")
-    
-    #liste = get_tri_par( 'market_cap', 'asc')
 
-    #dataframe = pd.DataFrame(liste)
-
-    
-
-    
-    # Conversion du graphique en image
     buffer = io.BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
@@ -226,8 +199,6 @@ def graph_view(request):
 
     # Encodage de l'image en base64
     graphic = urllib.parse.quote(base64.b64encode(image_png))
-
-
 
     btc['rsi']=ta.momentum.rsi(btc['Close'])
     #rsi=[i for i in rsi]
@@ -287,7 +258,10 @@ def graph_view(request):
         return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'MACD': macd, 'rsi': rsi , 'resultat': resultat})
 
     # Encodage de l'image en base64
-    return render(request, 'DocBlog/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi })
+    return render(request, 'BBS/graph.html', {'graphic': graphic, 'macd': macd, 'rsi': rsi })
+
+
+
 
 
 
@@ -303,7 +277,7 @@ def calculator_view(request):
             result = 'Erreur: {}'.format(str(e))
     else:
         result = ''
-    return render(request, 'DocBlog/calculator.html', {'result': result})
+    return render(request, 'BBS/calculator.html', {'result': result})
 
 
 
@@ -502,15 +476,10 @@ def get_message(request) :
             result = 'Erreur: {}'.format(str(e))
     else:
         result = ''
-    return render(request, 'DocBlog/calculator.html', {'result': result, 'messages': messages})
+    return render(request, 'BBS/calculator.html', {'result': result, 'messages': messages})
 
 
 
 
 
-
-import ta
-import matplotlib.pyplot as plt
-
-#######Pour récupérer le signal MACD
 
